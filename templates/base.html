@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Contact Recommender</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="logo">Contact Recommender</div>
+      <nav class="nav-links">
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('list_doctors') }}">Doctors</a>
+        <a href="{{ url_for('recommend') }}">Recommendations</a>
+        <a href="{{ url_for('create_doctor') }}" class="btn-primary">Add Doctor</a>
+    </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <small>EECE439 • Azure Contact Project</small>
+    </div>
+  </footer>
+</body>
+</html>

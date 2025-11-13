@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero">
+    <h2 class="hero-title">Find the right doctor, not just any contact.</h2>
+    <p class="hero-subtitle">
+      This app stores a list of real-world medical contacts and will later recommend
+      the best match based on city, specialty, fee, and rating — ready to be deployed
+      on Azure as part of your EECE439 project.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('create_doctor') }}" class="btn-primary">➕ Add a doctor</a>
+      <a href="{{ url_for('list_doctors') }}">View all doctors</a>
+    </div>
+  </section>
+
+  <section class="card-grid">
+    <article class="card">
+      <h3>1. Manage contacts</h3>
+      <p>
+        Add doctors with their city, specialty, consultation fees, and ratings.
+        Later we’ll connect this to a public dataset so your list is populated automatically.
+      </p>
+    </article>
+
+    <article class="card">
+      <h3>2. Build a recommendation engine</h3>
+      <p>
+        The next phase is a smart search that filters by constraints like
+        “surgeons in Beirut with fees under $2000 and high ratings”.
+      </p>
+    </article>
+
+    <article class="card">
+      <h3>3. Deploy on Azure</h3>
+      <p>
+        Finally, the whole app will be pushed to GitHub and deployed as an Azure Web App,
+        satisfying the course requirements.
+      </p>
+    </article>
+  </section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Add Doctor</h2>
+  <form method="post">
+    <label>Name:
+      <input type="text" name="name" required>
+    </label><br><br>
+
+    <label>Specialty:
+      <input type="text" name="specialty" placeholder="e.g. Surgeon" required>
+    </label><br><br>
+
+    <label>City:
+      <input type="text" name="city" required>
+    </label><br><br>
+
+    <label>Address:
+      <input type="text" name="address">
+    </label><br><br>
+
+    <label>Fee (USD):
+      <input type="number" name="fee" min="0" step="1">
+    </label><br><br>
+
+    <label>Rating (1–5):
+      <input type="number" name="rating" min="1" max="5" step="0.1">
+    </label><br><br>
+
+    <button type="submit">Save</button>
+  </form>
+{% endblock %}
