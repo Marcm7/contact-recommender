@@ -16,16 +16,22 @@ db = SQLAlchemy(app)
 # --- Model: one contact = one doctor ---
 class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    specialty = db.Column(db.String(120), nullable=False)
-    city = db.Column(db.String(120), nullable=False)
-    address = db.Column(db.String(200), nullable=True)
-    fee = db.Column(db.Integer, nullable=True)     # integer fee
-    rating = db.Column(db.Float, nullable=True)    # rating 1–5
+    name = db.Column(db.String(200), nullable=False)
+    specialty = db.Column(db.String(200), nullable=True)
+    city = db.Column(db.String(120), nullable=True)
+    country = db.Column(db.String(120), nullable=True)
+    clinic = db.Column(db.String(200), nullable=True)
+    address = db.Column(db.String(300), nullable=True)
+    phone = db.Column(db.String(50), nullable=True)
+    email = db.Column(db.String(120), nullable=True)
+    fee = db.Column(db.Integer, nullable=True)      # integer fee
+    rating = db.Column(db.Float, nullable=True)     # rating 1–5
 
     def __repr__(self):
         return f"<Doctor {self.name} ({self.specialty})>"
 
+
+# --- Routes ---
 
 @app.route("/")
 def index():
@@ -42,11 +48,15 @@ def list_doctors():
 def create_doctor():
     if request.method == "POST":
         name = request.form["name"]
-        specialty = request.form["specialty"]
-        city = request.form["city"]
+        specialty = request.form.get("specialty")
+        city = request.form.get("city")
+        country = request.form.get("country")
+        clinic = request.form.get("clinic")
         address = request.form.get("address")
+        phone = request.form.get("phone")
+        email = request.form.get("email")
 
-        # ---- Fee: integer, no negatives ----
+        # fee: integer, no negatives
         fee_raw = request.form.get("fee")
         if fee_raw not in (None, ""):
             fee = int(fee_raw)
@@ -55,7 +65,7 @@ def create_doctor():
         else:
             fee = None
 
-        # ---- Rating: optional float ----
+        # rating: optional float
         rating_raw = request.form.get("rating")
         rating = float(rating_raw) if rating_raw not in (None, "") else None
 
@@ -63,7 +73,11 @@ def create_doctor():
             name=name,
             specialty=specialty,
             city=city,
+            country=country,
+            clinic=clinic,
             address=address,
+            phone=phone,
+            email=email,
             fee=fee,
             rating=rating,
         )
@@ -72,17 +86,23 @@ def create_doctor():
         return redirect(url_for("list_doctors"))
 
     return render_template("new_doctor.html")
+
+
 @app.route("/doctors/<int:doctor_id>/edit", methods=["GET", "POST"])
 def edit_doctor(doctor_id):
     doctor = Doctor.query.get_or_404(doctor_id)
 
     if request.method == "POST":
         doctor.name = request.form["name"]
-        doctor.specialty = request.form["specialty"]
-        doctor.city = request.form["city"]
+        doctor.specialty = request.form.get("specialty")
+        doctor.city = request.form.get("city")
+        doctor.country = request.form.get("country")
+        doctor.clinic = request.form.get("clinic")
         doctor.address = request.form.get("address")
+        doctor.phone = request.form.get("phone")
+        doctor.email = request.form.get("email")
 
-        # fee: same logic as before (integer, no negatives)
+        # fee: integer, no negatives
         fee_raw = request.form.get("fee")
         if fee_raw not in (None, ""):
             fee = int(fee_raw)
@@ -92,7 +112,7 @@ def edit_doctor(doctor_id):
             fee = None
         doctor.fee = fee
 
-        # rating
+        # rating: optional float
         rating_raw = request.form.get("rating")
         doctor.rating = float(rating_raw) if rating_raw not in (None, "") else None
 
@@ -109,6 +129,7 @@ def delete_doctor(doctor_id):
     db.session.commit()
     return redirect(url_for("list_doctors"))
 
+
 @app.route("/recommend", methods=["GET", "POST"])
 def recommend():
     doctors = []
@@ -123,7 +144,6 @@ def recommend():
         query = Doctor.query
 
         if city:
-            # case-insensitive partial match
             query = query.filter(Doctor.city.ilike(f"%{city}%"))
             applied_filters["city"] = city
 
@@ -147,8 +167,6 @@ def recommend():
     return render_template("recommend.html",
                            doctors=doctors,
                            filters=applied_filters)
-
-
 
 
 if __name__ == "__main__":

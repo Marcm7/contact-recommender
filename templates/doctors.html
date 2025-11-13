@@ -1,43 +1,57 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h2>All Doctors</h2>
+<div class="container">
+    <h2 class="section-title">All Doctors</h2>
 
-  {% if doctors %}
-    <table>
-      <tr>
-        <th>Name</th>
-        <th>Specialty</th>
-        <th>City</th>
-        <th>Fee</th>
-        <th>Rating</th>
-        <th>Address</th>
-        <th>Actions</th>
-      </tr>
-      {% for d in doctors %}
-      <tr>
-        <td>{{ d.name }}</td>
-        <td>{{ d.specialty }}</td>
-        <td>{{ d.city }}</td>
-        <td>{{ d.fee if d.fee is not none else '-' }}</td>
-        <td>{{ d.rating if d.rating is not none else '-' }}</td>
-        <td>{{ d.address or '-' }}</td>
-        <td>
-          <a href="{{ url_for('edit_doctor', doctor_id=d.id) }}">Edit</a>
-          |
-          <form action="{{ url_for('delete_doctor', doctor_id=d.id) }}"
-                method="post"
-                style="display:inline"
-                onsubmit="return confirm('Delete this doctor?');">
-            <button type="submit" style="background:none;border:none;color:#dc2626;cursor:pointer;padding:0;">
-              Delete
-            </button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
+    {% if doctors %}
+    <table class="doctors-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Specialty</th>
+                <th>City</th>
+                <th>Country</th>
+                <th>Clinic</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Fee</th>
+                <th>Rating</th>
+                <th class="actions-col">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for d in doctors %}
+            <tr>
+                <td>{{ d.name }}</td>
+                <td>{{ d.specialty or "-" }}</td>
+                <td>{{ d.city or "-" }}</td>
+                <td>{{ d.country or "-" }}</td>
+                <td>{{ d.clinic or "-" }}</td>
+                <td>{{ d.phone or "-" }}</td>
+                <td>{{ d.email or "-" }}</td>
+                <td>{{ d.fee if d.fee is not none else "-" }}</td>
+                <td>{{ d.rating if d.rating is not none else "-" }}</td>
+
+                <td class="actions-col">
+                    <a href="{{ url_for('edit_doctor', doctor_id=d.id) }}">Edit</a>
+                    |
+                    <form action="{{ url_for('delete_doctor', doctor_id=d.id) }}" 
+                          method="post" 
+                          style="display:inline;"
+                          onsubmit="return confirm('Delete this doctor?');">
+                        <button type="submit" class="link-delete">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
     </table>
-  {% else %}
-    <p>No doctors yet. <a href="{{ url_for('create_doctor') }}">Add one</a>.</p>
-  {% endif %}
+
+    {% else %}
+    <p>No doctors yet. <a href="{{ url_for('new_doctor') }}">Add one.</a></p>
+    {% endif %}
+</div>
 {% endblock %}

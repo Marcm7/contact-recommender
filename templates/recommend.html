@@ -39,18 +39,24 @@
         <th>Name</th>
         <th>Specialty</th>
         <th>City</th>
+        <th>Country</th>
+        <th>Clinic</th>
+        <th>Phone</th>
+        <th>Email</th>
         <th>Fee</th>
         <th>Rating</th>
-        <th>Address</th>
       </tr>
       {% for d in doctors %}
       <tr>
         <td>{{ d.name }}</td>
-        <td>{{ d.specialty }}</td>
-        <td>{{ d.city }}</td>
+        <td>{{ d.specialty or '-' }}</td>
+        <td>{{ d.city or '-' }}</td>
+        <td>{{ d.country or '-' }}</td>
+        <td>{{ d.clinic or '-' }}</td>
+        <td>{{ d.phone or '-' }}</td>
+        <td>{{ d.email or '-' }}</td>
         <td>{{ d.fee if d.fee is not none else '-' }}</td>
         <td>{{ d.rating if d.rating is not none else '-' }}</td>
-        <td>{{ d.address or '-' }}</td>
       </tr>
       {% endfor %}
     </table>

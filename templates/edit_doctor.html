@@ -8,25 +8,41 @@
     </label><br><br>
 
     <label>Specialty:
-      <input type="text" name="specialty" value="{{ doctor.specialty }}" required>
+      <input type="text" name="specialty" value="{{ doctor.specialty or '' }}">
     </label><br><br>
 
     <label>City:
-      <input type="text" name="city" value="{{ doctor.city }}" required>
+      <input type="text" name="city" value="{{ doctor.city or '' }}">
+    </label><br><br>
+
+    <label>Country:
+      <input type="text" name="country" value="{{ doctor.country or '' }}">
+    </label><br><br>
+
+    <label>Clinic:
+      <input type="text" name="clinic" value="{{ doctor.clinic or '' }}">
     </label><br><br>
 
     <label>Address:
       <input type="text" name="address" value="{{ doctor.address or '' }}">
     </label><br><br>
 
+    <label>Phone:
+      <input type="text" name="phone" value="{{ doctor.phone or '' }}">
+    </label><br><br>
+
+    <label>Email:
+      <input type="text" name="email" value="{{ doctor.email or '' }}">
+    </label><br><br>
+
     <label>Fee (USD):
-      <input type="number" name="fee" min="0" step="1" value="{{ doctor.fee if doctor.fee is not none else '' }}">
+      <input type="number" name="fee" min="0" step="1"
+             value="{{ doctor.fee if doctor.fee is not none else '' }}">
     </label><br><br>
 
     <label>Rating (1–5):
-      <input type="number" name="rating" min="1" max="5" step="0.1" value="{{ doctor.rating if doctor.rating is not none else '' }}">
+      <input type="number" name="rating" min="1" max="5" step="0.1"
+             value="{{ doctor.rating if doctor.rating is not none else '' }}">
     </label><br><br>
 
-    <button type="submit">Save changes</button>
-  </form>
-{% endblock %}
+    <button type="submi

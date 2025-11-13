@@ -225,3 +225,24 @@ button[type="submit"]:hover {
   color: #6b7280;
   font-size: 0.8rem;
 }
+/* Better layout for Actions column */
+th.actions-col,
+td.actions-col {
+    white-space: nowrap;  /* Keep Edit | Delete on one line */
+    text-align: center;
+    width: 120px;
+}
+
+/* Make Delete look like a red link */
+button.link-delete {
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+button.link-delete:hover {
+    text-decoration: underline;
+}
