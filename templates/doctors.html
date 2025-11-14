@@ -51,7 +51,7 @@
     </table>
 
     {% else %}
-    <p>No doctors yet. <a href="{{ url_for('new_doctor') }}">Add one.</a></p>
+        No doctors yet. <a href="{{ url_for('add_doctor') }}">Add one.</a>
     {% endif %}
 </div>
 {% endblock %}
