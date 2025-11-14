@@ -169,8 +169,10 @@ def recommend():
                            filters=applied_filters)
 
 
+# Create tables as soon as the app is imported (works on Azure + locally)
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    # Create DB tables if they don't exist yet
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
+
