@@ -45,7 +45,7 @@ def list_doctors():
 
 
 @app.route("/doctors/new", methods=["GET", "POST"])
-def create_doctor():
+def add_doctor():
     if request.method == "POST":
         name = request.form["name"]
         specialty = request.form.get("specialty")
