@@ -1,48 +1,84 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h2>Edit Doctor</h2>
-  <form method="post">
-    <label>Name:
+<div class="container">
+  <h2 class="section-title">Edit Doctor</h2>
+
+  <form method="post" class="form-card">
+    <label>
+      Name:
       <input type="text" name="name" value="{{ doctor.name }}" required>
-    </label><br><br>
+    </label>
+    <br><br>
 
-    <label>Specialty:
+    <label>
+      Specialty:
       <input type="text" name="specialty" value="{{ doctor.specialty or '' }}">
-    </label><br><br>
+    </label>
+    <br><br>
 
-    <label>City:
+    <label>
+      City:
       <input type="text" name="city" value="{{ doctor.city or '' }}">
-    </label><br><br>
+    </label>
+    <br><br>
 
-    <label>Country:
+    <label>
+      Country:
       <input type="text" name="country" value="{{ doctor.country or '' }}">
-    </label><br><br>
+    </label>
+    <br><br>
 
-    <label>Clinic:
+    <label>
+      Clinic:
       <input type="text" name="clinic" value="{{ doctor.clinic or '' }}">
-    </label><br><br>
+    </label>
+    <br><br>
 
-    <label>Address:
+    <label>
+      Address:
       <input type="text" name="address" value="{{ doctor.address or '' }}">
-    </label><br><br>
+    </label>
+    <br><br>
 
-    <label>Phone:
+    <label>
+      Phone:
       <input type="text" name="phone" value="{{ doctor.phone or '' }}">
-    </label><br><br>
+    </label>
+    <br><br>
 
-    <label>Email:
+    <label>
+      Email:
       <input type="text" name="email" value="{{ doctor.email or '' }}">
-    </label><br><br>
+    </label>
+    <br><br>
 
-    <label>Fee (USD):
-      <input type="number" name="fee" min="0" step="1"
-             value="{{ doctor.fee if doctor.fee is not none else '' }}">
-    </label><br><br>
+    <label>
+      Fee (USD):
+      <input
+        type="number"
+        name="fee"
+        min="0"
+        step="1"
+        value="{{ doctor.fee if doctor.fee is not none else '' }}"
+      >
+    </label>
+    <br><br>
 
-    <label>Rating (1–5):
-      <input type="number" name="rating" min="1" max="5" step="0.1"
-             value="{{ doctor.rating if doctor.rating is not none else '' }}">
-    </label><br><br>
+    <label>
+      Rating (1–5):
+      <input
+        type="number"
+        name="rating"
+        min="1"
+        max="5"
+        step="0.1"
+        value="{{ doctor.rating if doctor.rating is not none else '' }}"
+      >
+    </label>
+    <br><br>
 
-    <button type="submi
+    <button type="submit">Save changes</button>
+  </form>
+</div>
+{% endblock %}
