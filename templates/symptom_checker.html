@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="margin-top: 30px;">
+    <h2>Symptom-Based Doctor Recommendation</h2>
+
+    <form method="POST" style="margin-top: 20px;">
+        <label for="symptoms"><strong>Describe your symptoms:</strong></label><br>
+        <textarea id="symptoms" name="symptoms" rows="4" cols="60" required style="width:100%; max-width:600px;"></textarea><br><br>
+
+        <button type="submit" class="btn btn-primary">Get Recommendation</button>
+    </form>
+
+    {% if recommendations %}
+        <h3 style="margin-top: 40px;">Possible Conditions & Suggested Specialties</h3>
+        <ul>
+            {% for item in recommendations %}
+                {% for disease, specialty in item.items() %}
+                    <li><strong>{{ disease }}</strong> → {{ specialty }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if doctors %}
+        <h3 style="margin-top: 40px;">Recommended Doctors</h3>
+        <table class="table table-bordered" style="width:100%; max-width:900px;">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Specialty</th>
+                    <th>City</th>
+                    <th>Clinic</th>
+                    <th>Phone</th>
+                    <th>Fee</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in doctors %}
+                <tr>
+                    <td>{{ d.name }}</td>
+                    <td>{{ d.specialty }}</td>
+                    <td>{{ d.city }}</td>
+                    <td>{{ d.clinic }}</td>
+                    <td>{{ d.phone }}</td>
+                    <td>{{ d.fee }}</td>
+                    <td>{{ d.rating }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}

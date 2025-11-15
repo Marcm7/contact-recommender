@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
+import requests
+RECOMMENDER_URL = "http://localhost:8000/api/recommend-doc"
 
 app = Flask(__name__)
 
@@ -167,6 +169,54 @@ def recommend():
     return render_template("recommend.html",
                            doctors=doctors,
                            filters=applied_filters)
+
+@app.route("/symptom-checker", methods=["GET", "POST"])
+def symptom_checker():
+    recommendations = []
+    doctors = []
+
+    if request.method == "POST":
+        symptoms_text = request.form.get("symptoms", "").strip()
+
+        if symptoms_text:
+            try:
+                # 1) Call the Dockerized recommender API
+                resp = requests.post(
+                    RECOMMENDER_URL,
+                    json={"symptoms": symptoms_text},
+                    timeout=10,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+
+                # Expect: {"data": [ {"Disease": "Specialty"}, ... ]}
+                recommendations = data.get("data", [])
+
+                # 2) Collect specialties returned by the model
+                specialties = set()
+                for item in recommendations:
+                    for disease, specialty in item.items():
+                        specialties.add(specialty)
+
+                # 3) Query your doctors table for those specialties
+                if specialties:
+                    doctors = (
+                        Doctor.query
+                        .filter(Doctor.specialty.in_(list(specialties)))
+                        .order_by(Doctor.rating.desc(), Doctor.fee.asc())
+                        .all()
+                    )
+
+            except Exception as e:
+                # If anything goes wrong, just log it in the terminal
+                print("Error calling recommender:", e)
+
+    return render_template(
+        "symptom_checker.html",
+        recommendations=recommendations,
+        doctors=doctors,
+    )
+
 
 
 # Create tables as soon as the app is imported (works on Azure + locally)
