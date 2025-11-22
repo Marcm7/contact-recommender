@@ -1,10 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 import os
+import json
 import requests
+import google.generativeai as genai
+
 RECOMMENDER_URL = "http://localhost:8000/api/recommend-doc"
 
+# Configure Gemini with your API key
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
 app = Flask(__name__)
+app.secret_key = "change_me"  # needed for flash() messages
 
 # --- Database configuration ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -31,6 +38,96 @@ class Doctor(db.Model):
 
     def __repr__(self):
         return f"<Doctor {self.name} ({self.specialty})>"
+    
+def call_gemini(system_prompt: str, user_prompt: str) -> str:
+    """
+    Call Gemini 2.5 Flash and return CLEAN, SAFE JSON text.
+    Handles:
+    - Markdown fences
+    - Extra commentary
+    - Incorrect formatting
+    """
+
+    model_name = "models/gemini-2.5-flash"
+    print(f"Using Gemini model: {model_name}")
+
+    model = genai.GenerativeModel(model_name)
+
+    full_prompt = (
+        system_prompt
+        + "\n\n"
+        + "Return ONLY valid JSON. No explanations, no extra text.\n"
+        + user_prompt
+    )
+
+    response = model.generate_content(full_prompt)
+
+    raw = response.text or ""
+    print("\n=== RAW GEMINI OUTPUT ===\n", raw, "\n==========================\n")
+
+    # -----------------------------------------------------
+    # 1) Remove markdown fences if Gemini used ```json ... ```
+    # -----------------------------------------------------
+    raw = raw.replace("```json", "").replace("```", "").strip()
+
+    # -----------------------------------------------------
+    # 2) Extract JSON object even if text surrounds it
+    # -----------------------------------------------------
+    start = raw.find("{")
+    end = raw.rfind("}")
+
+    if start == -1 or end == -1:
+        print("❌ ERROR: Could not find JSON in Gemini output.")
+        return "{}"   # fail safe
+
+    json_text = raw[start:end + 1]
+
+    # -----------------------------------------------------
+    # 3) Validate JSON before returning
+    # -----------------------------------------------------
+    import json
+    try:
+        json.loads(json_text)  # validate
+    except Exception as e:
+        print("❌ JSON PARSE ERROR:", e)
+        # try last-resort cleaning
+        json_text = json_text.replace("\n", " ").replace("\t", " ")
+        try:
+            json.loads(json_text)
+        except:
+            return "{}"
+
+    return json_text
+
+
+
+
+
+def get_doctors_by_specialties(specialties: list[str], limit: int = 10) -> list[Doctor]:
+    """Return doctors whose specialty is in the given list, ordered by rating."""
+    if not specialties:
+        return []
+
+    # Clean empty strings
+    clean_specs = [s for s in {s.strip() for s in specialties} if s]
+    if not clean_specs:
+        return []
+
+    # Order by rating descending (best rated first)
+    return (
+        Doctor.query
+        .filter(Doctor.specialty.in_(clean_specs))
+        .order_by(Doctor.rating.desc().nullslast())
+        .limit(limit)
+        .all()
+    )
+
+@app.route("/")
+def home():
+    doctors_count = Doctor.query.count()
+    return render_template("index.html", doctors_count=doctors_count)
+
+
 
 
 # --- Routes ---
@@ -172,51 +269,108 @@ def recommend():
 
 @app.route("/symptom-checker", methods=["GET", "POST"])
 def symptom_checker():
-    recommendations = []
+    symptoms = ""
+    recommendations = []   # list of dicts: {"Condition": "Specialty"}
     doctors = []
+    advice = ""
+    disclaimer = ""
+
+    # ✅ NEW: variables your template expects
+    conditions_list = None
+    specialties_list = None
 
     if request.method == "POST":
-        symptoms_text = request.form.get("symptoms", "").strip()
+        symptoms = request.form.get("symptoms", "").strip()
 
-        if symptoms_text:
-            try:
-                # 1) Call the Dockerized recommender API
-                resp = requests.post(
-                    RECOMMENDER_URL,
-                    json={"symptoms": symptoms_text},
-                    timeout=10,
-                )
-                resp.raise_for_status()
-                data = resp.json()
+        if not symptoms:
+            flash("Please describe your symptoms before requesting a recommendation.")
+            return redirect(url_for("symptom_checker"))
 
-                # Expect: {"data": [ {"Disease": "Specialty"}, ... ]}
-                recommendations = data.get("data", [])
+        system_prompt = """
+You are a medical guidance assistant (NOT a doctor).
+Your job:
+- Read the user's symptoms.
+- Suggest a few POSSIBLE conditions (not a diagnosis).
+- For each condition, suggest ONE main medical specialty.
+- Give short general advice.
+- Give a strong disclaimer.
 
-                # 2) Collect specialties returned by the model
-                specialties = set()
-                for item in recommendations:
-                    for disease, specialty in item.items():
-                        specialties.add(specialty)
+You MUST return VALID JSON ONLY, in exactly this structure:
 
-                # 3) Query your doctors table for those specialties
-                if specialties:
-                    doctors = (
-                        Doctor.query
-                        .filter(Doctor.specialty.in_(list(specialties)))
-                        .order_by(Doctor.rating.desc(), Doctor.fee.asc())
-                        .all()
-                    )
+{
+  "conditions": [
+    {"name": "Condition 1", "specialty": "Specialty 1"},
+    {"name": "Condition 2", "specialty": "Specialty 2"}
+  ],
+  "advice": "Short paragraph of general advice.",
+  "disclaimer": "Strong disclaimer that this is not a diagnosis and the user must see a doctor. Mention when to go to emergency services."
+}
 
-            except Exception as e:
-                # If anything goes wrong, just log it in the terminal
-                print("Error calling recommender:", e)
+Rules:
+- No extra text outside the JSON.
+- Condition and specialty names should be short.
+"""
+
+        user_prompt = f"""
+User symptoms (free text):
+
+\"\"\"{symptoms}\"\"\"
+"""
+
+        try:
+            raw = call_gemini(system_prompt, user_prompt)
+            print("RAW GEMINI OUTPUT:", raw)
+
+            start = raw.find("{")
+            end = raw.rfind("}")
+            if start == -1 or end == -1:
+                raise ValueError("Gemini did not return a JSON object")
+
+            json_text = raw[start:end + 1]
+            data = json.loads(json_text)
+
+            conditions = data.get("conditions", [])
+
+            recommendations = []
+            specialties_list = []     # ✅ for template
+            conditions_list = []      # ✅ for template
+
+            for cond in conditions:
+                name = cond.get("name", "").strip()
+                spec = cond.get("specialty", "").strip()
+                if name and spec:
+                    recommendations.append({name: spec})
+                    conditions_list.append(name)   # ✅ only names
+                    specialties_list.append(spec)  # ✅ only specialties
+
+            advice = data.get("advice", "")
+            disclaimer = data.get("disclaimer", "")
+
+            doctors = get_doctors_by_specialties(specialties_list, limit=10)
+
+        except Exception as e:
+            print("AI error in symptom_checker:", repr(e))
+            flash("There was a problem generating the AI recommendation. Please try again.")
+
+            recommendations = []
+            doctors = []
+            advice = ""
+            disclaimer = ""
+            conditions_list = []
+            specialties_list = []
 
     return render_template(
         "symptom_checker.html",
+        symptoms=symptoms,
         recommendations=recommendations,
         doctors=doctors,
-    )
+        advice=advice,
+        disclaimer=disclaimer,
 
+        # ✅ now your upgraded UI will show results
+        conditions=conditions_list,
+        specialties=specialties_list
+    )
 
 
 # Create tables as soon as the app is imported (works on Azure + locally)

@@ -1,55 +1,108 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container" style="margin-top: 30px;">
-    <h2>Symptom-Based Doctor Recommendation</h2>
 
-    <form method="POST" style="margin-top: 20px;">
-        <label for="symptoms"><strong>Describe your symptoms:</strong></label><br>
-        <textarea id="symptoms" name="symptoms" rows="4" cols="60" required style="width:100%; max-width:600px;"></textarea><br><br>
+<div class="page-wrap">
 
-        <button type="submit" class="btn btn-primary">Get Recommendation</button>
+  <!-- PAGE TITLE -->
+  <div class="checker-header">
+    <h1 class="page-title">Symptom-Based Doctor Recommendation</h1>
+    <p class="checker-sub">
+      Describe what you’re feeling in plain language. The AI will suggest possible conditions
+      and the right specialty to consult.
+    </p>
+  </div>
+
+  <!-- INPUT CARD -->
+  <section class="checker-card">
+    <div class="checker-card-head">
+      <div class="checker-icon">🧠</div>
+      <div>
+        <h3>Tell me your symptoms</h3>
+        <p>Include duration, severity, and anything that makes it better or worse.</p>
+      </div>
+    </div>
+
+    <form method="POST" class="checker-form">
+      <label for="symptoms" class="checker-label">Describe your symptoms</label>
+
+      <div class="checker-input-wrap">
+        <span class="checker-input-icon">📝</span>
+        <textarea
+          id="symptoms"
+          name="symptoms"
+          rows="4"
+          placeholder="Example: I’ve had a sore throat and cough for 3 days, no fever. Worse at night..."
+          required
+        >{{ input_text or "" }}</textarea>
+      </div>
+
+      <div class="checker-actions">
+        <button type="submit" class="btn-primary checker-btn">
+          ✨ Get Recommendation
+        </button>
+        <div class="checker-tip">
+          Tip: “symptom + how long + where + severity” gives best results.
+        </div>
+      </div>
     </form>
+  </section>
 
-    {% if recommendations %}
-        <h3 style="margin-top: 40px;">Possible Conditions & Suggested Specialties</h3>
-        <ul>
-            {% for item in recommendations %}
-                {% for disease, specialty in item.items() %}
-                    <li><strong>{{ disease }}</strong> → {{ specialty }}</li>
-                {% endfor %}
+  {% if conditions or specialties or advice %}
+  <!-- RESULTS -->
+  <section class="checker-results">
+
+    <!-- CONDITIONS + SPECIALTIES -->
+    <div class="results-grid">
+
+      <div class="result-card">
+        <h3>Possible Conditions</h3>
+
+        {% if conditions %}
+          <ul class="result-list">
+            {% for c in conditions %}
+              <li>🩺 {{ c }}</li>
             {% endfor %}
-        </ul>
-    {% endif %}
+          </ul>
+        {% else %}
+          <p class="result-muted">No conditions detected.</p>
+        {% endif %}
+      </div>
 
-    {% if doctors %}
-        <h3 style="margin-top: 40px;">Recommended Doctors</h3>
-        <table class="table table-bordered" style="width:100%; max-width:900px;">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Specialty</th>
-                    <th>City</th>
-                    <th>Clinic</th>
-                    <th>Phone</th>
-                    <th>Fee</th>
-                    <th>Rating</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for d in doctors %}
-                <tr>
-                    <td>{{ d.name }}</td>
-                    <td>{{ d.specialty }}</td>
-                    <td>{{ d.city }}</td>
-                    <td>{{ d.clinic }}</td>
-                    <td>{{ d.phone }}</td>
-                    <td>{{ d.fee }}</td>
-                    <td>{{ d.rating }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+      <div class="result-card">
+        <h3>Suggested Specialties</h3>
+
+        {% if specialties %}
+          <ul class="result-list">
+            {% for s in specialties %}
+              <li>🎯 {{ s }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="result-muted">No specialties suggested.</p>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- AI ADVICE -->
+    <div class="result-card advice-card">
+      <h3>AI Advice</h3>
+      {% if advice %}
+        <p class="advice-text">{{ advice }}</p>
+      {% else %}
+        <p class="result-muted">No advice generated.</p>
+      {% endif %}
+
+      <div class="disclaimer">
+        <strong>Disclaimer:</strong>
+        This information is for guidance only and is not a medical diagnosis.
+        If symptoms are severe or worsening, seek professional help.
+      </div>
+    </div>
+
+  </section>
+  {% endif %}
+
 </div>
+
 {% endblock %}

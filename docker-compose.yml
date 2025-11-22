@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  ai-recommender:
+    image: doctor-recommender        # uses the image you already built
+    container_name: doctor-recommender
+    ports:
+      - "8000:8000"

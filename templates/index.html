@@ -1,42 +1,137 @@
 {% extends "base.html" %}
-
 {% block content %}
+
+<div class="page-wrap">
+
+  <!-- HERO -->
   <section class="hero">
-    <h2 class="hero-title">Find the right doctor, not just any contact.</h2>
-    <p class="hero-subtitle">
-      This app stores a list of real-world medical contacts and will later recommend
-      the best match based on city, specialty, fee, and rating — ready to be deployed
-      on Azure as part of your EECE439 project.
-    </p>
-    <div class="hero-actions">
-      <a href="{{ url_for('add_doctor') }}" class="btn-primary">➕ Add a doctor</a>
-      <a href="{{ url_for('list_doctors') }}">View all doctors</a>
+    <div class="hero-card">
+
+      <!-- optional subtle glow blobs (no extra CSS required, but hooks ready) -->
+      <div class="hero-glow hero-glow-1"></div>
+      <div class="hero-glow hero-glow-2"></div>
+
+      <div class="hero-left">
+        <div class="hero-badge">
+          ✨ New: AI Symptom Checker (Gemini-powered)
+        </div>
+
+        <h1 class="hero-title">
+          Find the right doctor,
+          <span class="hero-title-accent">not just any contact.</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          This app stores real medical contacts and helps you discover
+          the best match based on city, specialty, fee, and rating —
+          ready for Azure deployment in EECE439.
+        </p>
+
+        <div class="hero-actions">
+          <a href="{{ url_for('add_doctor') }}" class="btn-primary">
+            ＋ Add a doctor
+          </a>
+          <a href="{{ url_for('symptom_checker') }}" class="btn-ghost">
+            🧠 Try Symptom Checker
+          </a>
+          <a href="{{ url_for('list_doctors') }}" class="btn-link">
+            View all doctors →
+          </a>
+        </div>
+
+        <p style="margin:0; opacity:.9; font-weight:600;">
+          Tip: try searching by city + specialty for instant matches.
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat-card">
+            <div class="stat-number">{{ doctors_count or 0 }}</div>
+            <div class="stat-label">Doctors in database</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">{{ specialties_count or "—" }}</div>
+            <div class="stat-label">Specialties covered</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">AI</div>
+            <div class="stat-label">Symptom triage</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-illustration" aria-hidden="true">
+          <div class="pulse-dot"></div>
+          <div class="illustration-ring ring-1"></div>
+          <div class="illustration-ring ring-2"></div>
+          <div class="illustration-ring ring-3"></div>
+          <div class="illustration-center">
+            <div class="icon">🩺</div>
+            <div class="icon">🏥</div>
+            <div class="icon">🧠</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <section class="card-grid">
-    <article class="card">
-      <h3>1. Manage contacts</h3>
-      <p>
-        Add doctors with their city, specialty, consultation fees, and ratings.
-        Later we’ll connect this to a public dataset so your list is populated automatically.
-      </p>
-    </article>
-
-    <article class="card">
-      <h3>2. Build a recommendation engine</h3>
-      <p>
-        The next phase is a smart search that filters by constraints like
-        “surgeons in Beirut with fees under $2000 and high ratings”.
-      </p>
-    </article>
-
-    <article class="card">
-      <h3>3. Deploy on Azure</h3>
-      <p>
-        Finally, the whole app will be pushed to GitHub and deployed as an Azure Web App,
-        satisfying the course requirements.
-      </p>
-    </article>
+  <!-- QUICK SEARCH -->
+  <section class="quick-search">
+    <form action="{{ url_for('list_doctors') }}" method="GET" class="search-bar" role="search">
+      <input
+        type="search"
+        name="q"
+        aria-label="Search doctors"
+        placeholder="Search doctors by name, specialty, or city..."
+        autocomplete="off"
+      />
+      <button type="submit">Search</button>
+    </form>
   </section>
+
+  <!-- FEATURES / STEPS -->
+  <section class="steps">
+    <div style="margin: 6px 0 12px;">
+      <h2 style="margin:0; font-size:1.25rem; font-weight:800;">
+        How it works
+      </h2>
+      <p style="margin:4px 0 0; color:#5a667a;">
+        Three simple steps to manage, recommend, and deploy your medical contacts.
+      </p>
+    </div>
+
+    <div class="steps-grid">
+
+      <div class="step-card">
+        <div class="step-icon">📌</div>
+        <h3>1. Manage contacts</h3>
+        <p>
+          Add doctors with city, specialty, consultation fees, and ratings.
+          Import datasets to grow your contacts automatically.
+        </p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-icon">🎯</div>
+        <h3>2. Recommendation engine</h3>
+        <p>
+          Filter doctors using constraints like
+          “surgeons in Beirut with low fees and high ratings”.
+        </p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-icon">☁️</div>
+        <h3>3. Deploy on Azure</h3>
+        <p>
+          Push your code to GitHub and deploy as an Azure Web App
+          with the EECE439 requirements.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+</div>
 {% endblock %}
