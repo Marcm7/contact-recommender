@@ -15,11 +15,18 @@ app.secret_key = "change_me"  # needed for flash() messages
 
 # --- Database configuration ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-db_path = os.path.join(BASE_DIR, "contacts.db")
+
+# Azure writable dir:
+AZURE_HOME = os.getenv("HOME")  # usually /home on App Service
+if AZURE_HOME:
+    db_path = os.path.join(AZURE_HOME, "contacts.db")
+else:
+    db_path = os.path.join(BASE_DIR, "contacts.db")  # local fallback
+
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
 db = SQLAlchemy(app)
+
 
 
 # --- Model: one contact = one doctor ---
